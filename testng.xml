@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Corpstack Test Suite">
+    <listeners>
+        <listener class-name="generic.ListenerClass"/>
+        <listener class-name="generic.RetryListener"/>
+        <listener class-name="org.testng.reporters.EmailableReporter2"/>
+    </listeners>
+    
+    <!-- Test for Retry Functionality -->
+    <test name="Retry Functionality Tests">
+        <classes>
+            <class name="test_scripts.RetryTest"/>
+        </classes>
+    </test>
+    <test name="Employee Module Tests">
+        <classes>
+            <class name="test_scripts.Employee.ExpenseTest"/>
+            <class name="test_scripts.Employee.FinanceTest"/>
+        </classes>
+    </test>
+    <test name="Privileged Module Tests">
+        <classes>
+            <class name="test_scripts.Privileged.UsersTest"/>
+            <class name="test_scripts.Privileged.FinanceTest"/>
+            <class name="test_scripts.Privileged.ExpenseTest"/>
+        </classes>
+    </test>
+    <test name="Administration Module Tests">
+        <classes>
+            <class name="test_scripts.Administration.LoginAuditLogTest"/>
+            <class name="test_scripts.Administration.CardsTest"/>
+        </classes>
+    </test>
+</suite>

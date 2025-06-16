@@ -1,0 +1,14 @@
+{
+  "name": "hdfc-automation",
+  "version": "1.0.0",
+  "description": "HDFC Bank automation tests",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.42.1",
+    "@types/node": "^20.11.24",
+    "dotenv": "^16.4.5",
+    "typescript": "^5.3.3"
+  }
+} 
