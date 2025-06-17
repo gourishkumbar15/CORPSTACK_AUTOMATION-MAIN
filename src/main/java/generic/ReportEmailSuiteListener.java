@@ -97,7 +97,7 @@ public class ReportEmailSuiteListener implements ISuiteListener {
                                 <p style="margin: 10px 0 0 0;">Please find the detailed test report attached to this email.</p>
                             </div>
 
-                            <p style="color: #6c757d; font-size: 0.9em;">Best regards,<br>Automated Test System</p>
+                            <p style="color: #6c757d; font-size: 0.9em;">Best regards,<br> Team QA</p>
                         </div>
                     </body>
                 </html>
