@@ -65,7 +65,7 @@ public class ExtentReportManager {
         extent.setSystemInfo("Java Version", System.getProperty("java.version"));
         extent.setSystemInfo("User Name", System.getProperty("user.name"));
         extent.setSystemInfo("Browser", "Chrome");
-        extent.setSystemInfo("Environment", "UAT");
+        extent.setSystemInfo("Environment", "PROD");
         extent.setSystemInfo("Application", "Corpstack Portal");
     }
     

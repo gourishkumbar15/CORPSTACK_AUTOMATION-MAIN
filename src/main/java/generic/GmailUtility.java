@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.io.File;
 
 /**
  * Utility class for connecting to Gmail and fetching emails (e.g., OTPs)
@@ -47,8 +48,9 @@ public class GmailUtility {
         try {
             props.load(new FileInputStream("property/test_data.properties"));
             this.username = props.getProperty("gmail.username");
-            this.password = props.getProperty("gmail.password");
+            this.password = props.getProperty("gmail.password").replaceAll("\\s+", "");
             logger.info("Loaded Gmail credentials for user: {}", username);
+            logger.info("App password length: {}", password.length());
         } catch (IOException e) {
             logger.error("Failed to load Gmail credentials from test_data.properties", e);
             throw new RuntimeException("Failed to load Gmail credentials from test_data.properties", e);
@@ -84,8 +86,16 @@ public class GmailUtility {
         props.put("mail.smtp.port", "587");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+        props.put("mail.debug", "true"); // Enable debug mode
 
-        Session emailSession = Session.getInstance(props);
+        Session emailSession = Session.getInstance(props, new jakarta.mail.Authenticator() {
+            @Override
+            protected jakarta.mail.PasswordAuthentication getPasswordAuthentication() {
+                return new jakarta.mail.PasswordAuthentication(username, password);
+            }
+        });
+        
         Message message = new MimeMessage(emailSession);
         
         message.setFrom(new InternetAddress(username));
@@ -114,13 +124,25 @@ public class GmailUtility {
             for (String filePath : attachments) {
                 jakarta.mail.BodyPart attachmentPart = new jakarta.mail.internet.MimeBodyPart();
                 try {
-                    jakarta.activation.DataSource source = new jakarta.activation.FileDataSource(filePath);
+                    File file = new File(filePath);
+                    if (!file.exists()) {
+                        logger.error("Attachment file does not exist: {}", filePath);
+                        continue;
+                    }
+                    if (!file.canRead()) {
+                        logger.error("Cannot read attachment file: {}", filePath);
+                        continue;
+                    }
+                    logger.info("Attaching file: {} (size: {} bytes)", filePath, file.length());
+                    
+                    jakarta.activation.DataSource source = new jakarta.activation.FileDataSource(file);
                     attachmentPart.setDataHandler(new jakarta.activation.DataHandler(source));
-                    attachmentPart.setFileName(new java.io.File(filePath).getName());
+                    attachmentPart.setFileName(file.getName());
                     multipart.addBodyPart(attachmentPart);
-                    logger.info("Added attachment: {}", filePath);
+                    logger.info("Successfully added attachment: {}", filePath);
                 } catch (Exception e) {
                     logger.error("Failed to attach file: {}", filePath, e);
+                    throw new MessagingException("Failed to attach file: " + filePath, e);
                 }
             }
         }
@@ -128,16 +150,28 @@ public class GmailUtility {
         message.setContent(multipart);
         
         logger.info("Connecting to SMTP server...");
-        Transport transport = emailSession.getTransport("smtp");
-        transport.connect("smtp.gmail.com", username, password);
-        logger.info("Connected to SMTP server successfully");
-        
-        logger.info("Sending email...");
-        transport.sendMessage(message, message.getAllRecipients());
-        logger.info("Email sent successfully");
-        
-        transport.close();
-        logger.info("SMTP connection closed");
+        Transport transport = null;
+        try {
+            transport = emailSession.getTransport("smtp");
+            transport.connect("smtp.gmail.com", username, password);
+            logger.info("Connected to SMTP server successfully");
+            
+            logger.info("Sending email...");
+            transport.sendMessage(message, message.getAllRecipients());
+            logger.info("Email sent successfully");
+        } catch (Exception e) {
+            logger.error("Failed to send email: {}", e.getMessage(), e);
+            throw new MessagingException("Failed to send email", e);
+        } finally {
+            if (transport != null) {
+                try {
+                    transport.close();
+                    logger.info("SMTP connection closed");
+                } catch (Exception e) {
+                    logger.error("Error closing SMTP connection: {}", e.getMessage(), e);
+                }
+            }
+        }
     }
 
     /**

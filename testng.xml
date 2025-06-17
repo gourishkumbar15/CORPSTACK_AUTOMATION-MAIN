@@ -4,6 +4,7 @@
     <listeners>
         <listener class-name="generic.ListenerClass"/>
         <listener class-name="generic.RetryListener"/>
+        <listener class-name="generic.ReportEmailSuiteListener"/>
         <listener class-name="org.testng.reporters.EmailableReporter2"/>
     </listeners>
     
@@ -17,6 +18,7 @@
         <classes>
             <class name="test_scripts.Employee.ExpenseTest"/>
             <class name="test_scripts.Employee.FinanceTest"/>
+            <class name="test_scripts.Employee.CardsTest"/>
         </classes>
     </test>
     <test name="Privileged Module Tests">

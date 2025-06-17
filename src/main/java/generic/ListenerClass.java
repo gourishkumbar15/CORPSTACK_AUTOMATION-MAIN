@@ -15,6 +15,8 @@ import org.openqa.selenium.OutputType;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 public class ListenerClass implements ITestListener
 {
@@ -158,8 +160,42 @@ public class ListenerClass implements ITestListener
 		
 		// Generate Allure report
 		try {
-			Runtime.getRuntime().exec("mvn allure:report");
+			// Create a ProcessBuilder for better control over the process
+			ProcessBuilder processBuilder = new ProcessBuilder();
+			
+			// Set the working directory to the project root
+			processBuilder.directory(new File(System.getProperty("user.dir")));
+			
+			// Set up the command based on the OS
+			if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+				processBuilder.command("cmd.exe", "/c", "mvn", "allure:report");
+			} else {
+				processBuilder.command("sh", "-c", "mvn allure:report");
+			}
+			
+			// Redirect error stream to output stream
+			processBuilder.redirectErrorStream(true);
+			
+			// Start the process
+			Process process = processBuilder.start();
+			
+			// Read the output
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+				String line;
+				while ((line = reader.readLine()) != null) {
+					System.out.println(line);
+				}
+			}
+			
+			// Wait for the process to complete
+			int exitCode = process.waitFor();
+			if (exitCode == 0) {
+				System.out.println("Allure report generated successfully");
+			} else {
+				System.err.println("Failed to generate Allure report. Exit code: " + exitCode);
+			}
 		} catch (Exception e) {
+			System.err.println("Error generating Allure report: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
