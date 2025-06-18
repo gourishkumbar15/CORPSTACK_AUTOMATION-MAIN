@@ -14,6 +14,7 @@ import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
+import org.testng.ITestResult;
 
 public class ReportEmailSuiteListener implements ISuiteListener {
     private static final Logger logger = LoggerFactory.getLogger(ReportEmailSuiteListener.class);
@@ -69,24 +70,31 @@ public class ReportEmailSuiteListener implements ISuiteListener {
                                 <p><strong>Duration:</strong> %s</p>
                             </div>
 
-                            <div style="display: flex; justify-content: space-between; margin: 20px 0;">
-                                <div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 5px; flex: 1; margin-right: 10px; text-align: center;">
-                                    <h3 style="margin: 0;">Passed</h3>
-                                    <p style="font-size: 24px; margin: 10px 0;">%d</p>
+                            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+                                <h3 style="color: #2c3e50; margin-top: 0;">Test Cases Summary</h3>
+                                <div style="margin-bottom: 20px;">
+                                    <h4 style="color: #28a745; margin-bottom: 10px;">Passed Test Cases:</h4>
+                                    <ul style="list-style-type: none; padding-left: 0;">
+                                        %s
+                                    </ul>
                                 </div>
-                                <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; flex: 1; margin-right: 10px; text-align: center;">
-                                    <h3 style="margin: 0;">Failed</h3>
-                                    <p style="font-size: 24px; margin: 10px 0;">%d</p>
+                                <div style="margin-bottom: 20px;">
+                                    <h4 style="color: #dc3545; margin-bottom: 10px;">Failed Test Cases:</h4>
+                                    <ul style="list-style-type: none; padding-left: 0;">
+                                        %s
+                                    </ul>
                                 </div>
-                                <div style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; flex: 1; text-align: center;">
-                                    <h3 style="margin: 0;">Skipped</h3>
-                                    <p style="font-size: 24px; margin: 10px 0;">%d</p>
+                                <div style="margin-bottom: 20px;">
+                                    <h4 style="color: #ffc107; margin-bottom: 10px;">Skipped Test Cases:</h4>
+                                    <ul style="list-style-type: none; padding-left: 0;">
+                                        %s
+                                    </ul>
                                 </div>
                             </div>
 
                             <div style="background-color: #e9ecef; padding: 15px; border-radius: 5px; margin: 20px 0;">
                                 <h3 style="color: #2c3e50; margin-top: 0;">Test Statistics</h3>
-                                <p><strong>Total Tests:</strong> %d</p>
+                                <p><strong>Total Test Cases:</strong> %d</p>
                                 <p><strong>Pass Rate:</strong> %.1f%%</p>
                                 <p><strong>Fail Rate:</strong> %.1f%%</p>
                                 <p><strong>Skip Rate:</strong> %.1f%%</p>
@@ -97,7 +105,7 @@ public class ReportEmailSuiteListener implements ISuiteListener {
                                 <p style="margin: 10px 0 0 0;">Please find the detailed test report attached to this email.</p>
                             </div>
 
-                            <p style="color: #6c757d; font-size: 0.9em;">Best regards,<br> Team QA</p>
+                            <p style="color: #6c757d; font-size: 0.9em;">Best regards,<br>Team QA</p>
                         </div>
                     </body>
                 </html>
@@ -105,9 +113,9 @@ public class ReportEmailSuiteListener implements ISuiteListener {
                     suite.getName(),
                     LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                     formattedDuration,
-                    passedTests,
-                    failedTests,
-                    skippedTests,
+                    getTestCasesList(suite, "PASS"),
+                    getTestCasesList(suite, "FAIL"),
+                    getTestCasesList(suite, "SKIP"),
                     totalTests,
                     (passedTests * 100.0 / totalTests),
                     (failedTests * 100.0 / totalTests),
@@ -148,5 +156,39 @@ public class ReportEmailSuiteListener implements ISuiteListener {
             logger.error("Failed to send test report email: {}", e.getMessage(), e);
             e.printStackTrace();
         }
+    }
+
+    private String getTestCasesList(ISuite suite, String status) {
+        StringBuilder testCases = new StringBuilder();
+        for (ISuiteResult result : suite.getResults().values()) {
+            ITestContext context = result.getTestContext();
+            switch (status) {
+                case "PASS":
+                    for (ITestResult testResult : context.getPassedTests().getAllResults()) {
+                        testCases.append("<li style='margin-bottom: 5px;'>")
+                                .append("<span style='color: #28a745;'>✓</span> ")
+                                .append(testResult.getMethod().getMethodName())
+                                .append("</li>");
+                    }
+                    break;
+                case "FAIL":
+                    for (ITestResult testResult : context.getFailedTests().getAllResults()) {
+                        testCases.append("<li style='margin-bottom: 5px;'>")
+                                .append("<span style='color: #dc3545;'>✗</span> ")
+                                .append(testResult.getMethod().getMethodName())
+                                .append("</li>");
+                    }
+                    break;
+                case "SKIP":
+                    for (ITestResult testResult : context.getSkippedTests().getAllResults()) {
+                        testCases.append("<li style='margin-bottom: 5px;'>")
+                                .append("<span style='color: #ffc107;'>!</span> ")
+                                .append(testResult.getMethod().getMethodName())
+                                .append("</li>");
+                    }
+                    break;
+            }
+        }
+        return testCases.toString();
     }
 } 
