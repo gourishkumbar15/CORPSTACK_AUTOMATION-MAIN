@@ -4,9 +4,16 @@
     <listeners>
         <listener class-name="generic.ListenerClass"/>
         <listener class-name="generic.RetryListener"/>
-        <listener class-name="generic.ReportEmailSuiteListener"/>
+        <listener class-name="generic.TestEmailListener"/>
         <listener class-name="org.testng.reporters.EmailableReporter2"/>
     </listeners>
+    
+    <!-- Test for Email Listener Verification -->
+    <test name="Email Listener Test">
+        <classes>
+            <class name="test_scripts.TestEmailListener"/>
+        </classes>
+    </test>
     
     <!-- Test for Retry Functionality -->
     <test name="Retry Functionality Tests">

@@ -20,7 +20,13 @@ public class ReportEmailSuiteListener implements ISuiteListener {
     private static final Logger logger = LoggerFactory.getLogger(ReportEmailSuiteListener.class);
 
     @Override
+    public void onStart(ISuite suite) {
+        logger.info("ReportEmailSuiteListener: Suite started - {}", suite.getName());
+    }
+
+    @Override
     public void onFinish(ISuite suite) {
+        logger.info("ReportEmailSuiteListener: Suite finished - {}", suite.getName());
         try {
             logger.info("Starting to send test report email...");
             GmailUtility gmail = new GmailUtility();
